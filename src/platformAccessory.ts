@@ -166,7 +166,7 @@ export class ExamplePlatformAccessory {
       // Check if a matching time interval was found
       if (currentPriceObject) {
         const currentSEKPerKWh = currentPriceObject.SEK_per_kWh;
-        const isCheap = currentSEKPerKWh < 0.1;
+        const isCheap = currentSEKPerKWh > 0.1;
   
         // Log the result
         console.log(`Current Price: ${currentSEKPerKWh} SEK/kWh`);
