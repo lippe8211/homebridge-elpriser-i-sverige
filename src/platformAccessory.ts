@@ -86,7 +86,7 @@ export class ExamplePlatformAccessory {
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
-    }, 10000);
+    }, 60000 * 10); // 10 min
   }
 
   /**
