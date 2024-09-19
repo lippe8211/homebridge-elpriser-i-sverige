@@ -79,8 +79,9 @@ export class ExamplePlatformAccessory {
       // push the new value to HomeKit
       // Call the function (example usage)
       this.fetchAndCheckElectricityPrice().then(result => {
-        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result);
-        this.platform.log.debug('Triggering motionSensorOneService:', result);
+        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result.isCheap);
+        this.platform.log.debug('Is cheap:', result.isCheap);
+        this.platform.log.debug('Current price:', result.currentPrice);
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
