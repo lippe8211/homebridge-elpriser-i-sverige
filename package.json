@@ -1,19 +1,19 @@
 {
-  "name": "homebridge-plugin-name",
-  "displayName": "Plugin Name",
+  "name": "homebridge-elpriser-i-sverige",
+  "displayName": "Elpriser i Sverige",
   "type": "module",
   "version": "1.0.0",
   "private": true,
-  "description": "A short description about what your plugin does.",
-  "author": "Your Name",
+  "description": "Elpriser i Sverige",
+  "author": "Janne Salenius",
   "license": "Apache-2.0",
-  "homepage": "https://github.com/USERNAME/GITHUB_PROJECT_NAME#readme",
+  "homepage": "https://github.com/lippe8211/homebridge-elpriser-i-sverige.git#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME.git"
+    "url": "https://github.com/lippe8211/homebridge-elpriser-i-sverige.git"
   },
   "bugs": {
-    "url": "https://github.com/USERNAME/GITHUB_PROJECT_NAME/issues"
+    "url": "https://github.com/lippe8211/homebridge-elpriser-i-sverige/issues"
   },
   "keywords": [
     "homebridge-plugin"

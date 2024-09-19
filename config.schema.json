@@ -1,5 +1,5 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "Homebridge Elpriser i Sverige",
   "pluginType": "platform",
   "singular": true,
   "schema": {
