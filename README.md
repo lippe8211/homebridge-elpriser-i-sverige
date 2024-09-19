@@ -1,3 +1,14 @@
+
+## Install via homebrew terminal
+
+```bash
+cd node_modules
+git clone --depth 1 --branch latest https://github.com/lippe8211/homebridge-elpriser-i-sverige.git
+cd homebridge-elpriser-i-sverige/
+npm install
+npm run build
+```
+
 <p align="center">
 
 <img src="https://github.com/homebridge/branding/raw/latest/logos/homebridge-wordmark-logo-vertical.png" width="150">
