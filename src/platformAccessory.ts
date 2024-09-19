@@ -82,6 +82,7 @@ export class ExamplePlatformAccessory {
         motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result.isCheap);
         this.platform.log.debug('Is cheap:', result.isCheap);
         this.platform.log.debug('Current price:', result.currentPrice);
+        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, false);
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
