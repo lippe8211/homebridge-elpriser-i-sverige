@@ -75,18 +75,12 @@ export class ExamplePlatformAccessory {
      * the `updateCharacteristic` method.
      *
      */
-    let motionDetected = false;
     setInterval(() => {
-      // EXAMPLE - inverse the trigger
-      //motionDetected = !motionDetected;
-
       // push the new value to HomeKit
-      
       // Call the function (example usage)
-      fetchAndCheckElectricityPrice().then(result => {
-        motionDetected = true;
-        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-        this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
+      this.fetchAndCheckElectricityPrice().then(result => {
+        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result);
+        this.platform.log.debug('Triggering motionSensorOneService:', result);
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
@@ -140,7 +134,7 @@ export class ExamplePlatformAccessory {
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
   }
 
-  async function fetchAndCheckElectricityPrice() {
+  async fetchAndCheckElectricityPrice() {
     // Get the current date
     const currentDate = new Date();
     
@@ -161,7 +155,7 @@ export class ExamplePlatformAccessory {
       const now = new Date();
       
       // Find the price data that matches the current time interval
-      const currentPriceObject = prices.find(price => {
+      const currentPriceObject = prices.find((price: { time_start: string | number | Date; time_end: string | number | Date; }) => {
         const startTime = new Date(price.time_start);
         const endTime = new Date(price.time_end);
         return now >= startTime && now < endTime;
