@@ -2,6 +2,8 @@ import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge
 
 import type { ExampleHomebridgePlatform } from './platform.js';
 
+import axios from 'axios';
+
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -76,12 +78,18 @@ export class ExamplePlatformAccessory {
     let motionDetected = false;
     setInterval(() => {
       // EXAMPLE - inverse the trigger
-      motionDetected = !motionDetected;
+      //motionDetected = !motionDetected;
 
       // push the new value to HomeKit
-      motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
-
-      this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
+      
+      // Call the function (example usage)
+      fetchAndCheckElectricityPrice().then(result => {
+        motionDetected = true;
+        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, motionDetected);
+        this.platform.log.debug('Triggering motionSensorOneService:', motionDetected);
+      }).catch(error => {
+        console.error('Failed to fetch or check prices:', error);
+      });
     }, 10000);
   }
 
@@ -130,5 +138,59 @@ export class ExamplePlatformAccessory {
     this.exampleStates.Brightness = value as number;
 
     this.platform.log.debug('Set Characteristic Brightness -> ', value);
+  }
+
+  async function fetchAndCheckElectricityPrice() {
+    // Get the current date
+    const currentDate = new Date();
+    
+    // Extract year, month, and day
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0'); // Months are 0-indexed
+    const day = String(currentDate.getDate()).padStart(2, '0');
+    
+    // Construct the dynamic URL
+    const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${month}-${day}_SE3.json`;
+    
+    try {
+      // Make the network request using axios
+      const response = await axios.get(url);
+      const prices = response.data;
+      
+      // Get the current time
+      const now = new Date();
+      
+      // Find the price data that matches the current time interval
+      const currentPriceObject = prices.find(price => {
+        const startTime = new Date(price.time_start);
+        const endTime = new Date(price.time_end);
+        return now >= startTime && now < endTime;
+      });
+      
+      // Check if a matching time interval was found
+      if (currentPriceObject) {
+        const currentSEKPerKWh = currentPriceObject.SEK_per_kWh;
+        const isCheap = currentSEKPerKWh < 0.2;
+  
+        // Log the result
+        console.log(`Current Price: ${currentSEKPerKWh} SEK/kWh`);
+        console.log(`Is it cheap? ${isCheap}`);
+        
+        // Return the result
+        return {
+          isCheap,
+          currentPrice: currentSEKPerKWh
+        };
+      } else {
+        console.log('No price data available for the current time.');
+        return {
+          isCheap: false,
+          currentPrice: null
+        };
+      }
+    } catch (error) {
+      console.error('Error fetching electricity prices:', error);
+      throw error;
+    }
   }
 }
