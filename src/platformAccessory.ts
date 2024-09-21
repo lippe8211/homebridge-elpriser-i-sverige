@@ -66,6 +66,9 @@ export class ExamplePlatformAccessory {
     const motionSensorOneService = this.accessory.getService('Motion Sensor One Name')
       || this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
 
+    const elprisLampa = this.accessory.getService('ElprisLampa')
+      || this.accessory.addService(this.platform.Service.Lightbulb, 'ElprisLampa', 'AABBCC');
+
     /**
      * Updating characteristics values asynchronously.
      *
@@ -83,10 +86,12 @@ export class ExamplePlatformAccessory {
         this.platform.log.debug('Is cheap:', result.isCheap);
         this.platform.log.debug('Current price:', result.currentPrice);
         motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, false);
+
+        elprisLampa.updateCharacteristic(this.platform.Characteristic.Brightness, result.currentPrice * 100)
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
-    }, 60000 * 10); // 10 min
+    }, 10000 ); // 10 min
   }
 
   /**
