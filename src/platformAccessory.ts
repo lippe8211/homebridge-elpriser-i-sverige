@@ -87,7 +87,8 @@ export class ExamplePlatformAccessory {
         this.platform.log.debug('Current price:', result.currentPrice);
         motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, false);
 
-        elprisLampa.updateCharacteristic(this.platform.Characteristic.Brightness, result.currentPrice * 100)
+        elprisLampa.updateCharacteristic(this.platform.Characteristic.On, result.isCheap);
+        elprisLampa.updateCharacteristic(this.platform.Characteristic.Brightness, result.currentPrice * 100);
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
