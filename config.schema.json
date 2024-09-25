@@ -5,11 +5,19 @@
   "schema": {
     "type": "object",
     "properties": {
-      "name": {
-        "title": "Name",
+      "elOmrade": {
+        "title": "Elområde",
         "type": "string",
+        "default": "SE3",
         "required": true,
-        "default": "Example Dynamic Platform"
+        "description": "SE1 = Luleå / Norra Sverige<br>SE2 = Sundsvall / Norra Mellansverige<br>SE3 = Stockholm / Södra Mellansverige<br>SE4 = Malmö / Södra Sverige"
+      },
+      "updateInterval": {
+        "title": "Uppdateringsfrekvens",
+        "type": "integer",
+        "default": 60,
+        "required": true,
+        "description": "Ange uppdateringsfrekvens i sekunder."
       }
     }
   }

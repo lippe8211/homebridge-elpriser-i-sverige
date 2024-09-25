@@ -3,6 +3,7 @@ import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge
 import type { ExampleHomebridgePlatform } from './platform.js';
 
 import axios from 'axios';
+import { config } from 'process';
 
 /**
  * Platform Accessory
@@ -92,7 +93,7 @@ export class ExamplePlatformAccessory {
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
-    }, 10000 ); // 10 min
+    }, this.platform.config.updateInterval * 1000 ); // 10 min
   }
 
   /**
@@ -152,8 +153,10 @@ export class ExamplePlatformAccessory {
     const day = String(currentDate.getDate()).padStart(2, '0');
     
     // Construct the dynamic URL
-    const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${month}-${day}_SE3.json`;
+    const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${month}-${day}_${this.platform.config.elOmrade}.json`;
     
+    console.log(url);
+
     try {
       // Make the network request using axios
       const response = await axios.get(url);
