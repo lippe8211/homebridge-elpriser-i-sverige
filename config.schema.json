@@ -12,12 +12,19 @@
         "required": true,
         "description": "SE1 = Luleå / Norra Sverige<br>SE2 = Sundsvall / Norra Mellansverige<br>SE3 = Stockholm / Södra Mellansverige<br>SE4 = Malmö / Södra Sverige"
       },
+      "prisGrans": {
+        "title": "Prisgräns per kWh",
+        "type": "integer",
+        "default": "20",
+        "required": true,
+        "description": "Ange prisgräns per kWh i ören."
+      },
       "updateInterval": {
         "title": "Uppdateringsfrekvens",
         "type": "integer",
         "default": 60,
         "required": true,
-        "description": "Ange uppdateringsfrekvens i sekunder."
+        "description": "Ange elpris uppdateringsfrekvens i sekunder.<br><br><p>Elpriser tillhandahålls av <a href=\"https://www.elprisetjustnu.se\">Elpriset just nu.se</a></p>"
       }
     }
   }

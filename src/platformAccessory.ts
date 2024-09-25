@@ -3,7 +3,6 @@ import type { CharacteristicValue, PlatformAccessory, Service } from 'homebridge
 import type { ExampleHomebridgePlatform } from './platform.js';
 
 import axios from 'axios';
-import { config } from 'process';
 
 /**
  * Platform Accessory
@@ -11,85 +10,35 @@ import { config } from 'process';
  * Each accessory may expose multiple services of different service types.
  */
 export class ExamplePlatformAccessory {
-  private service: Service;
-
-  /**
-   * These are just used to create a working example
-   * You should implement your own code to track the state of your accessory
-   */
-  private exampleStates = {
-    On: false,
-    Brightness: 100,
-  };
+  private elprisMotionSensorService: Service;
+  private elprisLampaService: Service;
 
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
   ) {
-    // set accessory information
+        // your accessory must have an AccessoryInformation service
     this.accessory.getService(this.platform.Service.AccessoryInformation)!
-      .setCharacteristic(this.platform.Characteristic.Manufacturer, 'Default-Manufacturer')
-      .setCharacteristic(this.platform.Characteristic.Model, 'Default-Model')
-      .setCharacteristic(this.platform.Characteristic.SerialNumber, 'Default-Serial');
+      .setCharacteristic(this.platform.Characteristic.Manufacturer, "Salenius Code AB")
+      .setCharacteristic(this.platform.Characteristic.Model, "Homebridge Elpris Sverige");
+    
+    this.elprisMotionSensorService = this.accessory.getService(this.platform.Service.MotionSensor)
+    || this.accessory.addService(this.platform.Service.MotionSensor, 'Elpris switch', 'elpris-motion-sensor-1');
+    this.elprisMotionSensorService.setCharacteristic(this.platform.Characteristic.Name, "Elpris sensor");
 
-    // get the LightBulb service if it exists, otherwise create a new LightBulb service
-    // you can create multiple services for each accessory
-    this.service = this.accessory.getService(this.platform.Service.Lightbulb) || this.accessory.addService(this.platform.Service.Lightbulb);
-
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
-    this.service.setCharacteristic(this.platform.Characteristic.Name, accessory.context.device.exampleDisplayName);
-
-    // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
-
-    // register handlers for the On/Off Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setOn.bind(this)) // SET - bind to the `setOn` method below
-      .onGet(this.getOn.bind(this)); // GET - bind to the `getOn` method below
-
-    // register handlers for the Brightness Characteristic
-    this.service.getCharacteristic(this.platform.Characteristic.Brightness)
-      .onSet(this.setBrightness.bind(this)); // SET - bind to the 'setBrightness` method below
-
-    /**
-     * Creating multiple services of the same type.
-     *
-     * To avoid "Cannot add a Service with the same UUID another Service without also defining a unique 'subtype' property." error,
-     * when creating multiple services of the same type, you need to use the following syntax to specify a name and subtype id:
-     * this.accessory.getService('NAME') || this.accessory.addService(this.platform.Service.Lightbulb, 'NAME', 'USER_DEFINED_SUBTYPE_ID');
-     *
-     * The USER_DEFINED_SUBTYPE must be unique to the platform accessory (if you platform exposes multiple accessories, each accessory
-     * can use the same subtype id.)
-     */
-
-    // Example: add two "motion sensor" services to the accessory
-    const motionSensorOneService = this.accessory.getService('Motion Sensor One Name')
-      || this.accessory.addService(this.platform.Service.MotionSensor, 'Motion Sensor One Name', 'YourUniqueIdentifier-1');
-
-    const elprisLampa = this.accessory.getService('ElprisLampa')
-      || this.accessory.addService(this.platform.Service.Lightbulb, 'ElprisLampa', 'AABBCC');
-
-    /**
-     * Updating characteristics values asynchronously.
-     *
-     * Example showing how to update the state of a Characteristic asynchronously instead
-     * of using the `on('get')` handlers.
-     * Here we change update the motion sensor trigger states on and off every 10 seconds
-     * the `updateCharacteristic` method.
-     *
-     */
+    this.elprisLampaService = this.accessory.getService(this.platform.Service.Lightbulb)
+      || this.accessory.addService(this.platform.Service.Lightbulb, 'ElprisLampa', 'elpris-lampa-1');
+    this.elprisMotionSensorService.setCharacteristic(this.platform.Characteristic.Name, "Elpris lampa");
+    
     setInterval(() => {
-      // push the new value to HomeKit
-      // Call the function (example usage)
       this.fetchAndCheckElectricityPrice().then(result => {
-        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result.isCheap);
-        this.platform.log.debug('Is cheap:', result.isCheap);
-        this.platform.log.debug('Current price:', result.currentPrice);
-        motionSensorOneService.updateCharacteristic(this.platform.Characteristic.MotionDetected, false);
+        this.elprisMotionSensorService.updateCharacteristic(this.platform.Characteristic.MotionDetected, result.isCheap);
+        this.platform.log.debug('Prisvärd el: ', result.isCheap);
+        this.platform.log.debug('Pris per timme: ', result.currentPrice);
+        this.elprisMotionSensorService.updateCharacteristic(this.platform.Characteristic.MotionDetected, false);
 
-        elprisLampa.updateCharacteristic(this.platform.Characteristic.On, result.isCheap);
-        elprisLampa.updateCharacteristic(this.platform.Characteristic.Brightness, result.currentPrice * 100);
+        this.elprisLampaService.updateCharacteristic(this.platform.Characteristic.On, result.isCheap);
+        this.elprisLampaService.updateCharacteristic(this.platform.Characteristic.Brightness, result.currentPrice * 100);
       }).catch(error => {
         console.error('Failed to fetch or check prices:', error);
       });
@@ -97,50 +46,14 @@ export class ExamplePlatformAccessory {
   }
 
   /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
+   * REQUIRED - This must return an array of the services you want to expose.
+   * This method must be named "getServices".
    */
-  async setOn(value: CharacteristicValue) {
-    // implement your own code to turn your device on/off
-    this.exampleStates.On = value as boolean;
-
-    this.platform.log.debug('Set Characteristic On ->', value);
-  }
-
-  /**
-   * Handle the "GET" requests from HomeKit
-   * These are sent when HomeKit wants to know the current state of the accessory, for example, checking if a Light bulb is on.
-   *
-   * GET requests should return as fast as possible. A long delay here will result in
-   * HomeKit being unresponsive and a bad user experience in general.
-   *
-   * If your device takes time to respond you should update the status of your device
-   * asynchronously instead using the `updateCharacteristic` method instead.
-
-   * @example
-   * this.service.updateCharacteristic(this.platform.Characteristic.On, true)
-   */
-  async getOn(): Promise<CharacteristicValue> {
-    // implement your own code to check if the device is on
-    const isOn = this.exampleStates.On;
-
-    this.platform.log.debug('Get Characteristic On ->', isOn);
-
-    // if you need to return an error to show the device as "Not Responding" in the Home app:
-    // throw new this.platform.api.hap.HapStatusError(this.platform.api.hap.HAPStatus.SERVICE_COMMUNICATION_FAILURE);
-
-    return isOn;
-  }
-
-  /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, changing the Brightness
-   */
-  async setBrightness(value: CharacteristicValue) {
-    // implement your own code to set the brightness
-    this.exampleStates.Brightness = value as number;
-
-    this.platform.log.debug('Set Characteristic Brightness -> ', value);
+  getServices() {
+    return [
+      this.elprisLampaService,
+      this.elprisMotionSensorService,
+    ];
   }
 
   async fetchAndCheckElectricityPrice() {
@@ -154,8 +67,6 @@ export class ExamplePlatformAccessory {
     
     // Construct the dynamic URL
     const url = `https://www.elprisetjustnu.se/api/v1/prices/${year}/${month}-${day}_${this.platform.config.elOmrade}.json`;
-    
-    console.log(url);
 
     try {
       // Make the network request using axios
@@ -175,11 +86,14 @@ export class ExamplePlatformAccessory {
       // Check if a matching time interval was found
       if (currentPriceObject) {
         const currentSEKPerKWh = currentPriceObject.SEK_per_kWh;
-        const isCheap = currentSEKPerKWh < 0.21;
+        const prisGrans = (this.platform.config.prisGrans / 100).toFixed(2);
+        const isCheap = currentSEKPerKWh < prisGrans;
   
         // Log the result
-        console.log(`Current Price: ${currentSEKPerKWh} SEK/kWh`);
-        console.log(`Is it cheap? ${isCheap}`);
+        console.log(`[INFO] Config Prisgräns: ${this.platform.config.prisGrans} SEK/kWh`);
+        console.log(`[INFO] Prisgräns: ${prisGrans} SEK/kWh`);
+        console.log(`[INFO] Aktuellt pris: ${currentSEKPerKWh} SEK/kWh`);
+        console.log(`[INFO] Prisvärd: ${isCheap}`);
         
         // Return the result
         return {
@@ -187,7 +101,7 @@ export class ExamplePlatformAccessory {
           currentPrice: currentSEKPerKWh
         };
       } else {
-        console.log('No price data available for the current time.');
+        console.error('No price data available for the current time.');
         return {
           isCheap: false,
           currentPrice: null
